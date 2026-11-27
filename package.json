@@ -1,0 +1,12 @@
+{
+  "name": "barmods-store-real",
+  "version": "3.0.0",
+  "private": true,
+  "description": "BARMODS STORE Fullstack — Toko VPN QRIS Otomatis + Website Admin + Firebase",
+  "engines": {
+    "node": ">=18.x"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}

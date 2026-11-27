@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BARMODS ADMIN — Kontrol User, Saldo, Harga & Server</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --paper: #FFFDF2;
+      --ink: #111111;
+      --yellow: #FFE600;
+      --cyan: #00D4FF;
+      --red: #FF3B30;
+      --green: #22C55E;
+      --purple: #A855F7;
+      --white: #FFFFFF;
+      --shadow: 5px 5px 0px #111111;
+      --shadow-sm: 3px 3px 0px #111111;
+      --shadow-lg: 7px 7px 0px #111111;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      background-color: var(--paper);
+      background-image:
+        radial-gradient(rgba(17, 17, 17, 0.12) 1.4px, transparent 1.4px),
+        radial-gradient(rgba(17, 17, 17, 0.06) 1.4px, var(--paper) 1.4px);
+      background-size: 22px 22px;
+      background-position: 0 0, 11px 11px;
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.5;
+      overflow-x: hidden;
+      padding-bottom: 56px;
+    }
+
+    .comic-header {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px 16px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand-badge {
+      background: var(--red);
+      color: var(--white);
+      border: 3.5px solid var(--ink);
+      box-shadow: var(--shadow);
+      padding: 6px 16px;
+      transform: rotate(-1.5deg);
+    }
+
+    .brand-title {
+      font-family: 'Bangers', Impact, sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.35rem);
+      letter-spacing: 2px;
+      line-height: 1;
+      text-shadow: 2px 2px 0 var(--ink);
+    }
+
+    .brand-sub {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      background: var(--yellow);
+      color: var(--ink);
+      display: inline-block;
+      padding: 2px 8px;
+      margin-top: 4px;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .pill-badge, .btn-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--white);
+      color: var(--ink);
+      border: 3px solid var(--ink);
+      box-shadow: var(--shadow-sm);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .btn-pill { cursor: pointer; }
+    .btn-pill:hover { background: var(--yellow); }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); border: 2px solid var(--ink); }
+
+    /* Bubble Navigation */
+    .bubble-nav-wrap {
+      position: sticky;
+      top: 10px;
+      z-index: 40;
+      max-width: 1100px;
+      margin: 10px auto 22px;
+      padding: 0 16px;
+    }
+
+    .bubble-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      flex-wrap: wrap;
+      background: rgba(255, 253, 242, 0.95);
+      backdrop-filter: blur(6px);
+      border: 3.5px solid var(--ink);
+      box-shadow: var(--shadow);
+      border-radius: 999px;
+      padding: 10px 14px;
+    }
+
+    .nav-bubble {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 15px;
+      border-radius: 999px;
+      border: 3px solid var(--ink);
+      background: var(--white);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .nav-bubble:hover { transform: translateY(-2px); }
+    .nav-bubble.active {
+      background: var(--yellow);
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 4px 6px 0 var(--ink);
+    }
+    .nav-bubble.active::after {
+      content: "";
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 11px;
+      height: 11px;
+      background: var(--yellow);
+      border-right: 3px solid var(--ink);
+      border-bottom: 3px solid var(--ink);
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+
+    .comic-panel {
+      background: var(--white);
+      border: 3.5px solid var(--ink);
+      box-shadow: var(--shadow-lg);
+      border-radius: 22px;
+      padding: 22px;
+      margin-bottom: 20px;
+    }
+
+    .panel-ribbon {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 3px dashed var(--ink);
+      flex-wrap: wrap;
+    }
+
+    .panel-heading { font-family: 'Bangers', Impact, sans-serif; font-size: 1.7rem; letter-spacing: 1.2px; line-height: 1.05; }
+    .panel-sub { font-size: 0.8rem; font-weight: 700; color: #444; }
+    .burst {
+      font-family: 'Bangers', Impact, sans-serif;
+      font-size: 0.95rem;
+      letter-spacing: 1px;
+      background: var(--yellow);
+      border: 3px solid var(--ink);
+      box-shadow: 3px 3px 0 var(--ink);
+      padding: 4px 12px;
+      border-radius: 999px;
+      transform: rotate(2deg);
+    }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+    .kpi-card {
+      background: var(--white);
+      border: 3.5px solid var(--ink);
+      box-shadow: var(--shadow);
+      border-radius: 18px;
+      padding: 16px;
+    }
+    .kpi-label { font-size: 0.74rem; font-weight: 700; text-transform: uppercase; color: #333; }
+    .kpi-value { font-family: 'Bangers', Impact, sans-serif; font-size: 1.9rem; letter-spacing: 1px; margin-top: 4px; }
+
+    .two-col { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 20px; align-items: start; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { font-size: 0.76rem; font-weight: 700; text-transform: uppercase; }
+
+    .comic-input {
+      width: 100%;
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      padding: 9px 12px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      background: var(--paper);
+      color: var(--ink);
+      outline: none;
+      box-shadow: 3px 3px 0 var(--ink);
+    }
+    .comic-input:focus { background: var(--white); }
+
+    .btn-small {
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      background: var(--cyan);
+      color: var(--ink);
+      padding: 7px 12px;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 var(--ink);
+      white-space: nowrap;
+    }
+    .btn-small:hover { background: var(--yellow); }
+    .btn-small.green { background: var(--green); }
+    .btn-small.danger { background: var(--red); color: var(--white); }
+    .btn-small.white { background: var(--white); }
+
+    .btn-big {
+      margin-top: 14px;
+      width: 100%;
+      border: 3.5px solid var(--ink);
+      border-radius: 15px;
+      background: var(--yellow);
+      color: var(--ink);
+      padding: 12px 16px;
+      font-family: 'Bangers', Impact, sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 1.4px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    .btn-big:hover { background: var(--green); }
+
+    .item-list { display: grid; gap: 12px; }
+    .item-card {
+      background: var(--paper);
+      border: 3px solid var(--ink);
+      box-shadow: var(--shadow-sm);
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .item-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .badge { border: 2px solid var(--ink); border-radius: 999px; padding: 2px 10px; font-size: 0.72rem; font-weight: 700; background: var(--green); }
+    .badge.off { background: var(--red); color: var(--white); }
+    .badge.warn { background: var(--yellow); }
+
+    .toggle-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+    .toggle-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 3px solid var(--ink);
+      border-radius: 999px;
+      background: var(--paper);
+      padding: 8px 14px;
+      font-weight: 700;
+      font-size: 0.84rem;
+      cursor: pointer;
+      box-shadow: 2px 2px 0 var(--ink);
+    }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th, td { border: 2.5px solid var(--ink); padding: 9px 10px; text-align: left; font-weight: 700; }
+    th { background: var(--yellow); text-transform: uppercase; font-size: 0.75rem; }
+    tr:nth-child(even) td { background: var(--paper); }
+
+    .preview-box {
+      background: #FFF9CC;
+      border: 3px solid var(--ink);
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      display: grid;
+      gap: 6px;
+    }
+
+    /* Modal Adjust Balance */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 17, 17, 0.62);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--white);
+      border: 4px solid var(--ink);
+      box-shadow: 8px 8px 0 var(--ink);
+      border-radius: 22px;
+      padding: 20px;
+    }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .modal-head h2 { font-family: 'Bangers', Impact, sans-serif; font-size: 1.6rem; }
+
+    .auth-gate { max-width: 480px; margin: 40px auto; text-align: center; }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--yellow);
+      color: var(--ink);
+      border: 3px solid var(--ink);
+      box-shadow: var(--shadow);
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      z-index: 150;
+      transform: translateY(90px);
+      opacity: 0;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 880px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .two-col { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px) {
+      .kpi-grid, .form-grid { grid-template-columns: 1fr; }
+      .bubble-nav { border-radius: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="comic-header">
+    <div class="brand-badge">
+      <div class="brand-title">BARMODS ADMIN</div>
+      <div class="brand-sub">👑 KONTROL USER, SALDO, HARGA &amp; SERVER</div>
+    </div>
+    <div class="header-right">
+      <div class="pill-badge">
+        <span class="dot"></span>
+        <span id="adminStatusText">PREVIEW MODE</span>
+      </div>
+      <button type="button" class="btn-pill" id="btnBackStore">🛒 Ke Toko</button>
+      <button type="button" class="btn-pill" id="btnAdminLogout" style="display:none;">🚪 Logout</button>
+    </div>
+  </header>
+
+  <div class="container" id="adminAuthGate" style="display:none;">
+    <div class="comic-panel auth-gate">
+      <div style="font-size:2.6rem;">👑</div>
+      <h1 class="panel-heading" style="margin:8px 0;">LOGIN ADMIN BARMODS</h1>
+      <p style="font-size:0.86rem;font-weight:600;margin-bottom:16px;">
+        Masuk dengan Gmail yang terdaftar di <code>ADMIN_EMAILS</code> Vercel.
+      </p>
+      <button type="button" class="btn-big" id="btnAdminGoogleLogin">🔵 MASUK ADMIN DENGAN GOOGLE</button>
+      <p id="adminAuthErr" style="color:var(--red);font-size:0.8rem;font-weight:700;margin-top:10px;"></p>
+    </div>
+  </div>
+
+  <div id="adminApp">
+    <nav class="bubble-nav-wrap" aria-label="Navigasi Admin">
+      <div class="bubble-nav" id="adminBubbleNav">
+        <button type="button" class="nav-bubble active" data-view="dashboard">📊 Dashboard</button>
+        <button type="button" class="nav-bubble" data-view="users">👥 User &amp; Saldo</button>
+        <button type="button" class="nav-bubble" data-view="pricing">💰 Harga &amp; Renew</button>
+        <button type="button" class="nav-bubble" data-view="servers">🌍 Server VPN</button>
+        <button type="button" class="nav-bubble" data-view="settings">⚙️ Setting Toko</button>
+        <button type="button" class="nav-bubble" data-view="orders">🧾 Transaksi</button>
+      </div>
+    </nav>
+
+    <main class="container">
+      <!-- VIEW 1: DASHBOARD -->
+      <section class="view-section active" id="view-dashboard">
+        <div class="kpi-grid">
+          <div class="kpi-card" style="background: var(--yellow);">
+            <div class="kpi-label">Total Top Up Masuk</div>
+            <div class="kpi-value" id="kpiRevenue">Rp 0</div>
+          </div>
+          <div class="kpi-card" style="background: var(--cyan);">
+            <div class="kpi-label">Total Member</div>
+            <div class="kpi-value" id="kpiUsers">0</div>
+          </div>
+          <div class="kpi-card" style="background: var(--green);">
+            <div class="kpi-label">Total Saldo User</div>
+            <div class="kpi-value" id="kpiBalance">Rp 0</div>
+          </div>
+          <div class="kpi-card" style="background: #F3E8FF;">
+            <div class="kpi-label">Server Aktif</div>
+            <div class="kpi-value" id="kpiServers">0</div>
+          </div>
+        </div>
+
+        <div class="comic-panel">
+          <div class="panel-ribbon">
+            <div>
+              <h2 class="panel-heading">⚡ RINGKASAN ATURAN TOKO AKTIF</h2>
+              <div class="panel-sub">Tersinkronisasi otomatis ke Website Toko secara real-time</div>
+            </div>
+            <div class="burst">LIVE SYNC</div>
+          </div>
+          <div class="preview-box" id="dashSummaryBox"></div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: MANAJEMEN USER & SALDO -->
+      <section class="view-section" id="view-users">
+        <div class="comic-panel">
+          <div class="panel-ribbon">
+            <div>
+              <h2 class="panel-heading">👥 DAFTAR USER &amp; KONTROL SALDO</h2>
+              <div class="panel-sub">Lihat semua member terdaftar, tambah saldo, atau kurangi saldo secara instan</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="text" id="searchUser" class="comic-input" placeholder="Cari email / nama..." style="width:210px;padding:7px 11px;" />
+              <button type="button" class="btn-small" id="btnRefreshUsers">🔄 Refresh</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nama Member</th>
+                  <th>Email</th>
+                  <th>Saldo Saat Ini</th>
+                  <th>Aksi Saldo</th>
+                </tr>
+              </thead>
+              <tbody id="usersTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: HARGA PER HARI & ATURAN PERPANJANGAN -->
+      <section class="view-section" id="view-pricing">
+        <div class="two-col">
+          <div class="comic-panel">
+            <div class="panel-ribbon">
+              <div>
+                <h2 class="panel-heading">💰 SETTING HARGA &amp; PERPANJANGAN</h2>
+                <div class="panel-sub">Atur tarif harian (Rp 333/hari) &amp; promo perpanjangan Rp 7.000/bulan</div>
+              </div>
+              <div class="burst" style="background: var(--cyan);">DINAMIS</div>
+            </div>
+            <form id="pricingForm">
+              <div class="form-grid">
+                <div class="field">
+                  <label for="inpPriceDay">Harga VPN / Hari (Rp)</label>
+                  <input type="number" id="inpPriceDay" class="comic-input" min="1" value="333" required />
+                </div>
+                <div class="field">
+                  <label for="inpRenewPrice">Harga Perpanjang / Bln (Rp)</label>
+                  <input type="number" id="inpRenewPrice" class="comic-input" min="1" value="7000" required />
+                </div>
+                <div class="field">
+                  <label for="inpRenewMinDays">Wajib Beli Minimal (Hari)</label>
+                  <input type="number" id="inpRenewMinDays" class="comic-input" min="1" value="30" required />
+                </div>
+                <div class="field">
+                  <label for="inpRenewWindow">Wajib Sebelum Exp (Hari)</label>
+                  <input type="number" id="inpRenewWindow" class="comic-input" min="1" value="3" required />
+                </div>
+                <div class="field">
+                  <label for="inpRenewDays">Durasi Perpanjangan (Hari)</label>
+                  <input type="number" id="inpRenewDays" class="comic-input" min="1" value="30" required />
+                </div>
+                <div class="field">
+                  <label for="inpAdminFee">Biaya Admin QRIS Top Up (Rp)</label>
+                  <input type="number" id="inpAdminFee" class="comic-input" min="0" value="500" required />
+                </div>
+                <div class="field">
+                  <label for="inpQuota">Default Quota GB (0 = Unli)</label>
+                  <input type="number" id="inpQuota" class="comic-input" min="0" value="0" required />
+                </div>
+                <div class="field">
+                  <label for="inpIpLimit">Default IP Limit</label>
+                  <input type="number" id="inpIpLimit" class="comic-input" min="0" value="2" required />
+                </div>
+              </div>
+              <button type="submit" class="btn-big">💾 SIMPAN HARGA &amp; ATURAN</button>
+            </form>
+          </div>
+
+          <div class="comic-panel">
+            <div class="panel-ribbon">
+              <div>
+                <h2 class="panel-heading">🧮 SIMULASI KALKULASI HARGA</h2>
+                <div class="panel-sub">Otomatis berubah mengikuti input sebelah kiri</div>
+              </div>
+            </div>
+            <div class="preview-box" id="pricingPreviewBox"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: SERVER VPN -->
+      <section class="view-section" id="view-servers">
+        <div class="two-col">
+          <div class="comic-panel">
+            <div class="panel-ribbon">
+              <div>
+                <h2 class="panel-heading" id="srvFormTitle">➕ TAMBAH SERVER VPN</h2>
+                <div class="panel-sub">Auth Key tersimpan privat di server Firestore</div>
+              </div>
+              <div class="burst">VPS</div>
+            </div>
+            <form id="serverForm">
+              <input type="hidden" id="srvEditId" />
+              <div class="form-grid">
+                <div class="field full">
+                  <label for="srvName">Nama Server</label>
+                  <input type="text" id="srvName" class="comic-input" placeholder="SG VIP DigitalOcean" required />
+                </div>
+                <div class="field full">
+                  <label for="srvDomain">Domain VPS</label>
+                  <input type="text" id="srvDomain" class="comic-input" placeholder="sg1.barmods.com" required />
+                </div>
+                <div class="field full">
+                  <label for="srvAuth">API Auth Key Panel</label>
+                  <input type="text" id="srvAuth" class="comic-input" placeholder="auth key port 5888" required />
+                </div>
+                <div class="field">
+                  <label for="srvCf">CloudFront</label>
+                  <input type="text" id="srvCf" class="comic-input" value="-" />
+                </div>
+                <div class="field">
+                  <label for="srvPort">Port API</label>
+                  <input type="number" id="srvPort" class="comic-input" value="5888" required />
+                </div>
+              </div>
+              <button type="submit" class="btn-big">💾 SIMPAN SERVER</button>
+              <button type="button" class="btn-small white" id="btnCancelSrvEdit" style="width:100%;margin-top:8px;display:none;">Batal Edit</button>
+            </form>
+          </div>
+
+          <div class="comic-panel">
+            <div class="panel-ribbon">
+              <div><h2 class="panel-heading">🌍 DAFTAR SERVER</h2></div>
+            </div>
+            <div class="item-list" id="serverList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 5: SETTING TOKO -->
+      <section class="view-section" id="view-settings">
+        <div class="comic-panel">
+          <div class="panel-ribbon">
+            <div><h2 class="panel-heading">⚙️ SETTING TOKO, PROTOKOL &amp; CHESTPAY</h2></div>
+            <div class="burst">ALL-IN-ONE</div>
+          </div>
+          <form id="settingsForm" style="display:grid;gap:14px;">
+            <div class="form-grid">
+              <div class="field">
+                <label for="setStoreName">Nama Store</label>
+                <input type="text" id="setStoreName" class="comic-input" required />
+              </div>
+              <div class="field">
+                <label for="setTagline">Tagline</label>
+                <input type="text" id="setTagline" class="comic-input" />
+              </div>
+              <div class="field full">
+                <label for="setAnnouncement">Banner Pengumuman</label>
+                <input type="text" id="setAnnouncement" class="comic-input" />
+              </div>
+              <div class="field full">
+                <label for="setChestpayKey">ChestPay API Key (kosongkan jika tidak diubah)</label>
+                <input type="password" id="setChestpayKey" class="comic-input" placeholder="Masukkan ChestPay API Key baru..." />
+              </div>
+            </div>
+            <div class="field">
+              <label>Protokol Aktif</label>
+              <div class="toggle-grid">
+                <label class="toggle-chip"><input type="checkbox" id="chkSsh" checked /> 🚀 SSH</label>
+                <label class="toggle-chip"><input type="checkbox" id="chkVmess" checked /> ⚡ VMess</label>
+                <label class="toggle-chip"><input type="checkbox" id="chkVless" checked /> 🛡 VLESS</label>
+                <label class="toggle-chip"><input type="checkbox" id="chkTrojan" checked /> 🐎 Trojan</label>
+                <label class="toggle-chip"><input type="checkbox" id="chkSs" checked /> 🔰 Shadowsocks</label>
+              </div>
+            </div>
+            <div class="field">
+              <label>Kontrol Fitur</label>
+              <div class="toggle-grid">
+                <label class="toggle-chip"><input type="checkbox" id="chkAllowSwitch" checked /> 🔄 Izinkan Ganti Protokol</label>
+                <label class="toggle-chip" style="background:#FFF1F0;"><input type="checkbox" id="chkMaint" /> 🚧 Mode Maintenance</label>
+              </div>
+            </div>
+            <button type="submit" class="btn-big">💾 SIMPAN PENGATURAN TOKO</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- VIEW 6: TRANSAKSI -->
+      <section class="view-section" id="view-orders">
+        <div class="comic-panel">
+          <div class="panel-ribbon">
+            <div><h2 class="panel-heading">🧾 RIWAYAT TRANSAKSI &amp; MUTASI SALDO</h2></div>
+            <button type="button" class="btn-small" id="btnRefreshOrders">🔄 Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>User</th>
+                  <th>Keterangan</th>
+                  <th>Nominal</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL TAMBAH / KURANGI SALDO USER -->
+  <div class="modal-backdrop" id="balModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="balModalTitle">💰 UBAH SALDO USER</h2>
+        <button type="button" class="btn-small white" id="btnCloseBal">✕</button>
+      </div>
+      <p style="font-size:0.84rem;font-weight:700;margin-bottom:12px;" id="balModalUser"></p>
+      <form id="balForm" style="display:grid;gap:10px;">
+        <div class="field">
+          <label for="balAmount">Nominal (Rp)</label>
+          <input type="number" id="balAmount" class="comic-input" min="1" placeholder="contoh: 10000" required />
+        </div>
+        <div class="field">
+          <label for="balNote">Catatan (Opsional)</label>
+          <input type="text" id="balNote" class="comic-input" placeholder="contoh: Bonus / Koreksi saldo" />
+        </div>
+        <button type="submit" class="btn-big" id="btnConfirmBal" style="margin-top:4px;font-size:1.3rem;">✅ PROSES SALDO</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Tersimpan!</div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+  <script>
+    const state = {
+      liveMode: false,
+      idToken: null,
+      store: {
+        storeName: 'BARMODS STORE',
+        tagline: 'QRIS TOPUP SALDO • AUTO VPN',
+        announcement: 'Harga mulai Rp 333/hari! Beli 30 hari bisa perpanjang Rp 7.000/bln (H-3 sebelum exp).',
+        maintenance: false,
+        allowSwitchProtocol: true,
+        pricePerDay: 333,
+        renewPrice: 7000,
+        renewDays: 30,
+        renewMinOriginalDays: 30,
+        renewWindowDays: 3,
+        defaultQuota: 0,
+        defaultIpLimit: 2,
+        adminFee: 500,
+        activeProtocols: { ssh: true, vmess: true, vless: true, trojan: true, shadowsocks: true }
+      },
+      servers: [
+        { id: 'srv1', name: 'SG VIP DigitalOcean', domain: 'sg1.barmods.com', auth: 'demo_auth', cloudfront: '-', port: '5888', active: true }
+      ],
+      users: [
+        { uid: 'u1', displayName: 'Budi Gamer', email: 'budi.barmods@gmail.com', balance: 15000 },
+        { uid: 'u2', displayName: 'Rina VPN', email: 'rina.net@gmail.com', balance: 7500 }
+      ],
+      orders: [
+        { orderId: 'ORD-54af-9012', type: 'topup', email: 'budi.barmods@gmail.com', note: 'Top Up Saldo Rp 15.000', baseAmount: 15000, amountToPay: 15559, status: 'settlement' },
+        { orderId: 'VPN-881234', type: 'buy_vpn', email: 'rina.net@gmail.com', note: 'Beli VMESS 30 Hari (Saldo)', amountToPay: 9990, status: 'settlement' }
+      ],
+      hasChestpayKey: true,
+      chestpayKeyMask: 'LIVE••••KEY',
+      balTarget: null
+    };
+
+    const $ = (id) => document.getElementById(id);
+    let toastTimer = null;
+    function showToast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+    }
+    function formatRp(n) { return 'Rp ' + Number(n || 0).toLocaleString('id-ID'); }
+    function switchView(v) {
+      document.querySelectorAll('.nav-bubble').forEach((b) => b.classList.toggle('active', b.dataset.view === v));
+      document.querySelectorAll('.view-section').forEach((s) => s.classList.toggle('active', s.id === `view-${v}`));
+    }
+
+    async function apiAdmin(method = 'GET', body = null) {
+      const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${state.idToken}` }
+      };
+      if (body) opts.body = JSON.stringify(body);
+      const r = await fetch('/api/admin', opts);
+      return r.json();
+    }
+
+    function updatePricingPreview() {
+      const perDay = Math.max(1, Number($('inpPriceDay').value) || 333);
+      const rPrice = Math.max(1, Number($('inpRenewPrice').value) || 7000);
+      const rMin = Math.max(1, Number($('inpRenewMinDays').value) || 30);
+      const rWin = Math.max(1, Number($('inpRenewWindow').value) || 3);
+      const rDays = Math.max(1, Number($('inpRenewDays').value) || 30);
+      $('pricingPreviewBox').innerHTML = `
+        <div>📅 1 Hari = <strong>${formatRp(perDay * 1)}</strong></div>
+        <div>📅 7 Hari = <strong>${formatRp(perDay * 7)}</strong></div>
+        <div>📅 15 Hari = <strong>${formatRp(perDay * 15)}</strong></div>
+        <div>⭐ 30 Hari = <strong>${formatRp(perDay * 30)}</strong> (Berhak Perpanjang!)</div>
+        <div style="border-top:2px dashed #111;padding-top:6px;margin-top:4px;">
+          🔄 Perpanjangan +${rDays} Hari = <strong>${formatRp(rPrice)}</strong><br/>
+          📌 Syarat: Wajib akun pembelian ≥ <strong>${rMin} hari</strong> &amp; dilakukan maksimal <strong>${rWin} hari sebelum expired</strong>.
+        </div>
+      `;
+    }
+
+    function renderAll() {
+      const topups = state.orders.filter((o) => o.type === 'topup' && (o.status || '').toLowerCase() === 'settlement');
+      const rev = topups.reduce((s, o) => s + Number(o.baseAmount || o.amountToPay || 0), 0);
+      const totalBal = state.users.reduce((s, u) => s + Number(u.balance || 0), 0);
+
+      $('kpiRevenue').textContent = formatRp(rev);
+      $('kpiUsers').textContent = String(state.users.length);
+      $('kpiBalance').textContent = formatRp(totalBal);
+      $('kpiServers').textContent = `${state.servers.filter((s) => s.active !== false).length} / ${state.servers.length}`;
+
+      $('dashSummaryBox').innerHTML = `
+        <div>🏪 Nama Toko: <strong>${state.store.storeName}</strong></div>
+        <div>💰 Harga Harian: <strong>${formatRp(state.store.pricePerDay)} / hari</strong> (30 Hari = ${formatRp(state.store.pricePerDay * 30)})</div>
+        <div>🔄 Perpanjangan: <strong>${formatRp(state.store.renewPrice)} / ${state.store.renewDays} hari</strong> (Wajib beli ≥ ${state.store.renewMinOriginalDays} hari &amp; H-${state.store.renewWindowDays} sebelum exp)</div>
+        <div>💳 ChestPay API Key: <strong>${state.hasChestpayKey ? 'Aktif (' + state.chestpayKeyMask + ')' : 'Belum diisi'}</strong></div>
+      `;
+
+      // Pricing inputs
+      $('inpPriceDay').value = state.store.pricePerDay;
+      $('inpRenewPrice').value = state.store.renewPrice;
+      $('inpRenewMinDays').value = state.store.renewMinOriginalDays;
+      $('inpRenewWindow').value = state.store.renewWindowDays;
+      $('inpRenewDays').value = state.store.renewDays;
+      $('inpAdminFee').value = state.store.adminFee;
+      $('inpQuota').value = state.store.defaultQuota;
+      $('inpIpLimit').value = state.store.defaultIpLimit;
+      updatePricingPreview();
+
+      // Settings inputs
+      $('setStoreName').value = state.store.storeName || '';
+      $('setTagline').value = state.store.tagline || '';
+      $('setAnnouncement').value = state.store.announcement || '';
+      $('chkSsh').checked = state.store.activeProtocols?.ssh !== false;
+      $('chkVmess').checked = state.store.activeProtocols?.vmess !== false;
+      $('chkVless').checked = state.store.activeProtocols?.vless !== false;
+      $('chkTrojan').checked = state.store.activeProtocols?.trojan !== false;
+      $('chkSs').checked = state.store.activeProtocols?.shadowsocks !== false;
+      $('chkAllowSwitch').checked = state.store.allowSwitchProtocol !== false;
+      $('chkMaint').checked = Boolean(state.store.maintenance);
+
+      renderUsers();
+      renderServers();
+      renderOrders();
+    }
+
+    function renderUsers() {
+      const q = ($('searchUser').value || '').trim().toLowerCase();
+      const tbody = $('usersTbody');
+      tbody.innerHTML = '';
+      const filtered = state.users.filter((u) =>
+        !q || (u.email || '').toLowerCase().includes(q) || (u.displayName || '').toLowerCase().includes(q)
+      );
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Tidak ada user ditemukan.</td></tr>';
+        return;
+      }
+      filtered.forEach((u) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${u.displayName || 'Member'}</td>
+          <td>${u.email || '-'}</td>
+          <td style="color:#0f766e;">${formatRp(u.balance)}</td>
+          <td>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button type="button" class="btn-small green" data-act="add">➕ Tambah</button>
+              <button type="button" class="btn-small danger" data-act="sub">➖ Kurangi</button>
+            </div>
+          </td>
+        `;
+        tr.querySelector('[data-act="add"]').addEventListener('click', () => openBalModal(u, 'add'));
+        tr.querySelector('[data-act="sub"]').addEventListener('click', () => openBalModal(u, 'sub'));
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openBalModal(u, type) {
+      state.balTarget = { user: u, type };
+      $('balModalTitle').textContent = type === 'add' ? '➕ TAMBAH SALDO USER' : '➖ KURANGI SALDO USER';
+      $('balModalUser').textContent = `Member: ${u.email} (Saldo saat ini: ${formatRp(u.balance)})`;
+      $('balAmount').value = '';
+      $('balNote').value = '';
+      $('btnConfirmBal').style.background = type === 'add' ? 'var(--green)' : 'var(--red)';
+      $('btnConfirmBal').style.color = type === 'add' ? 'var(--ink)' : 'var(--white)';
+      $('balModal').classList.add('open');
+    }
+
+    function renderServers() {
+      const wrap = $('serverList');
+      wrap.innerHTML = '';
+      if (!state.servers.length) {
+        wrap.innerHTML = '<div class="item-card">Belum ada server terpasang.</div>';
+        return;
+      }
+      state.servers.forEach((srv) => {
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        card.innerHTML = `
+          <div class="item-top">
+            <strong>🌍 ${srv.name}</strong>
+            <span class="badge ${srv.active === false ? 'off' : ''}">${srv.active === false ? 'NONAKTIF' : 'AKTIF'}</span>
+          </div>
+          <div style="font-size:0.8rem;font-weight:700;"><code>${srv.domain}:${srv.port || '5888'}</code> • CF: <code>${srv.cloudfront || '-'}</code></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="btn-small white" data-act="edit">✏️ Edit</button>
+            <button type="button" class="btn-small" data-act="test">⚡ Test</button>
+            <button type="button" class="btn-small green" data-act="toggle">${srv.active === false ? 'Aktifkan' : 'Nonaktifkan'}</button>
+            <button type="button" class="btn-small danger" data-act="del">🗑️</button>
+          </div>
+        `;
+        card.querySelector('[data-act="edit"]').addEventListener('click', () => {
+          $('srvEditId').value = srv.id;
+          $('srvName').value = srv.name;
+          $('srvDomain').value = srv.domain;
+          $('srvAuth').value = srv.auth;
+          $('srvCf').value = srv.cloudfront || '-';
+          $('srvPort').value = srv.port || '5888';
+          $('srvFormTitle').textContent = '✏️ EDIT SERVER VPN';
+          $('btnCancelSrvEdit').style.display = 'block';
+        });
+        card.querySelector('[data-act="test"]').addEventListener('click', async () => {
+          if (!state.liveMode) return showToast(`⚡ Preview: Test ${srv.domain}:${srv.port}`);
+          const res = await apiAdmin('POST', { action: 'test_server', payload: { domain: srv.domain, port: srv.port } });
+          showToast(res.message || 'Selesai test.');
+        });
+        card.querySelector('[data-act="toggle"]').addEventListener('click', async () => {
+          srv.active = srv.active === false ? true : false;
+          await persistServers();
+        });
+        card.querySelector('[data-act="del"]').addEventListener('click', async () => {
+          state.servers = state.servers.filter((s) => s.id !== srv.id);
+          await persistServers();
+        });
+        wrap.appendChild(card);
+      });
+    }
+
+    function renderOrders() {
+      const tbody = $('ordersTbody');
+      tbody.innerHTML = '';
+      if (!state.orders.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada transaksi.</td></tr>';
+        return;
+      }
+      state.orders.forEach((o) => {
+        const st = (o.status || 'pending').toLowerCase();
+        const cls = st === 'settlement' ? '' : st === 'pending' ? 'warn' : 'off';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><code>${o.orderId || o.id}</code></td>
+          <td>${o.email || '-'}</td>
+          <td>${o.note || o.type || '-'}</td>
+          <td>${formatRp(o.amountToPay)}</td>
+          <td><span class="badge ${cls}">${st.toUpperCase()}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function persistServers() {
+      if (state.liveMode) {
+        const res = await apiAdmin('POST', { action: 'save_servers', payload: state.servers });
+        if (!res.success) return showToast('❌ ' + res.message);
+        state.servers = res.servers;
+      }
+      renderAll();
+      showToast('✅ Daftar server tersimpan!');
+    }
+
+    async function loadLiveAdminData() {
+      const data = await apiAdmin('GET');
+      if (!data.success) {
+        $('adminAuthGate').style.display = 'block';
+        $('adminApp').style.display = 'none';
+        $('adminAuthErr').textContent = data.message || 'Akses ditolak.';
+        return;
+      }
+      state.store = data.store;
+      state.servers = data.servers || [];
+      state.users = data.users || [];
+      state.orders = data.orders || [];
+      state.hasChestpayKey = data.hasChestpayKey;
+      state.chestpayKeyMask = data.chestpayKeyMask;
+      $('adminAuthGate').style.display = 'none';
+      $('adminApp').style.display = 'block';
+      $('btnAdminLogout').style.display = 'inline-flex';
+      $('adminStatusText').textContent = `ADMIN: ${data.adminEmail}`;
+      renderAll();
+    }
+
+    // Bindings
+    $('adminBubbleNav').addEventListener('click', (e) => {
+      const b = e.target.closest('.nav-bubble');
+      if (b) switchView(b.dataset.view);
+    });
+    $('searchUser').addEventListener('input', renderUsers);
+    $('btnCloseBal').addEventListener('click', () => $('balModal').classList.remove('open'));
+
+    ['inpPriceDay', 'inpRenewPrice', 'inpRenewMinDays', 'inpRenewWindow', 'inpRenewDays'].forEach((id) => {
+      $(id).addEventListener('input', updatePricingPreview);
+    });
+
+    $('balForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!state.balTarget) return;
+      const amt = Math.floor(Number($('balAmount').value) || 0);
+      if (amt <= 0) return showToast('❌ Masukkan nominal valid.');
+      const { user, type } = state.balTarget;
+      const note = $('balNote').value.trim();
+
+      if (state.liveMode) {
+        const res = await apiAdmin('POST', {
+          action: 'adjust_balance',
+          payload: { uid: user.uid || user.id, type, amount: amt, note }
+        });
+        if (!res.success) return showToast('❌ ' + res.message);
+        showToast('✅ ' + res.message);
+        await loadLiveAdminData();
+      } else {
+        user.balance = type === 'add' ? Number(user.balance) + amt : Math.max(0, Number(user.balance) - amt);
+        state.orders.unshift({
+          orderId: 'ADM-' + Date.now().toString().slice(-6),
+          type: type === 'add' ? 'admin_add' : 'admin_sub',
+          email: user.email,
+          note: note || (type === 'add' ? 'Admin tambah saldo' : 'Admin kurangi saldo'),
+          amountToPay: amt,
+          status: 'settlement'
+        });
+        renderAll();
+        showToast(`✅ Saldo ${user.email} diperbarui!`);
+      }
+      $('balModal').classList.remove('open');
+    });
+
+    $('pricingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        pricePerDay: Number($('inpPriceDay').value) || 333,
+        renewPrice: Number($('inpRenewPrice').value) || 7000,
+        renewMinOriginalDays: Number($('inpRenewMinDays').value) || 30,
+        renewWindowDays: Number($('inpRenewWindow').value) || 3,
+        renewDays: Number($('inpRenewDays').value) || 30,
+        adminFee: Number($('inpAdminFee').value) || 0,
+        defaultQuota: Number($('inpQuota').value) || 0,
+        defaultIpLimit: Number($('inpIpLimit').value) || 2
+      };
+      state.store = { ...state.store, ...payload };
+      if (state.liveMode) {
+        const res = await apiAdmin('POST', { action: 'save_pricing', payload });
+        if (!res.success) return showToast('❌ ' + res.message);
+      }
+      renderAll();
+      showToast('✅ Harga harian & aturan perpanjangan tersimpan!');
+    });
+
+    $('serverForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const editId = $('srvEditId').value;
+      const obj = {
+        id: editId || 'srv_' + Date.now(),
+        name: $('srvName').value.trim(),
+        domain: $('srvDomain').value.trim(),
+        auth: $('srvAuth').value.trim(),
+        cloudfront: $('srvCf').value.trim() || '-',
+        port: $('srvPort').value.trim() || '5888',
+        active: true
+      };
+      if (editId) {
+        const idx = state.servers.findIndex((s) => s.id === editId);
+        if (idx >= 0) state.servers[idx] = { ...state.servers[idx], ...obj };
+      } else {
+        state.servers.push(obj);
+      }
+      $('serverForm').reset();
+      $('srvEditId').value = '';
+      $('srvCf').value = '-';
+      $('srvPort').value = '5888';
+      $('srvFormTitle').textContent = '➕ TAMBAH SERVER VPN';
+      $('btnCancelSrvEdit').style.display = 'none';
+      await persistServers();
+    });
+
+    $('btnCancelSrvEdit').addEventListener('click', () => {
+      $('serverForm').reset();
+      $('srvEditId').value = '';
+      $('srvFormTitle').textContent = '➕ TAMBAH SERVER VPN';
+      $('btnCancelSrvEdit').style.display = 'none';
+    });
+
+    $('settingsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        storeName: $('setStoreName').value.trim(),
+        tagline: $('setTagline').value.trim(),
+        announcement: $('setAnnouncement').value.trim(),
+        maintenance: $('chkMaint').checked,
+        allowSwitchProtocol: $('chkAllowSwitch').checked,
+        activeProtocols: {
+          ssh: $('chkSsh').checked,
+          vmess: $('chkVmess').checked,
+          vless: $('chkVless').checked,
+          trojan: $('chkTrojan').checked,
+          shadowsocks: $('chkSs').checked
+        },
+        chestpayApiKey: $('setChestpayKey').value.trim()
+      };
+      state.store = { ...state.store, ...payload };
+      if (payload.chestpayApiKey) {
+        state.hasChestpayKey = true;
+        state.chestpayKeyMask = payload.chestpayApiKey.slice(0, 4) + '••••';
+      }
+      if (state.liveMode) {
+        const res = await apiAdmin('POST', { action: 'save_settings', payload });
+        if (!res.success) return showToast('❌ ' + res.message);
+      }
+      $('setChestpayKey').value = '';
+      renderAll();
+      showToast('✅ Pengaturan toko tersimpan!');
+    });
+
+    $('btnRefreshUsers').addEventListener('click', () => state.liveMode ? loadLiveAdminData() : showToast('🔄 Data preview diperbarui.'));
+    $('btnRefreshOrders').addEventListener('click', () => state.liveMode ? loadLiveAdminData() : showToast('🔄 Data preview diperbarui.'));
+    $('btnBackStore').addEventListener('click', () => {
+      if (state.liveMode) window.location.href = '/';
+      else showToast('💡 Di Vercel, tombol ini langsung membuka halaman Toko (index.html).');
+    });
+    $('btnAdminLogout').addEventListener('click', async () => {
+      if (typeof firebase !== 'undefined' && firebase.apps.length) await firebase.auth().signOut();
+      window.location.reload();
+    });
+
+    async function initAdmin() {
+      if (window.location.protocol.startsWith('http')) {
+        try {
+          const r = await fetch('/api/vpn?action=config');
+          const cfg = await r.json();
+          if (cfg && cfg.success && cfg.firebase && cfg.firebase.apiKey && typeof firebase !== 'undefined') {
+            state.liveMode = true;
+            if (!firebase.apps.length) firebase.initializeApp(cfg.firebase);
+            const auth = firebase.auth();
+            $('adminAuthGate').style.display = 'block';
+            $('adminApp').style.display = 'none';
+
+            $('btnAdminGoogleLogin').addEventListener('click', async () => {
+              try { await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+              catch (e) { $('adminAuthErr').textContent = e.message; }
+            });
+
+            auth.onAuthStateChanged(async (u) => {
+              if (u) {
+                state.idToken = await u.getIdToken();
+                await loadLiveAdminData();
+              } else {
+                $('adminAuthGate').style.display = 'block';
+                $('adminApp').style.display = 'none';
+              }
+            });
+            return;
+          }
+        } catch (e) {}
+      }
+      renderAll();
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>
